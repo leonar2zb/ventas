@@ -9,3 +9,7 @@ composer install
 php artisan vendor:publish --tag=filament-assets
 npm install
 npm run build  # or 'vite build' depending on your setup
+
+A database migration an seeding must be executed in order to generate users and roles. 
+please run: php artisan migrate --seed
+Default admin user will be manager@mycompany.com with password "password"
