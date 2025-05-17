@@ -21,3 +21,12 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+# Ignora assets compilados o publicados
+/public/vendor/
+/public/css/filament/
+/public/js/filament/
+/public/build/
+
+# ¡No ignorar el core!
+!/public/index.php
+!public/.htaccess
