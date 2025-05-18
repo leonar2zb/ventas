@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Storage;
 use Filament\Tables\Filters\SelectFilter;
-
+use Illuminate\Support\Facades\Auth;
 
 class ProductResource extends Resource
 {
@@ -139,7 +139,8 @@ class ProductResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->visible(fn() => Auth::user()?->can('deleteAny', \App\Models\Product::class)),
                 ]),
             ]);
     }
