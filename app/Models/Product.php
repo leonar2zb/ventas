@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\Unit;
+use App\Enums\ProductCategory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -24,6 +25,7 @@ class Product extends Model
 
     protected $casts = [
         'unit' => Unit::class,
+        'category' => ProductCategory::class,
     ];
 
 
