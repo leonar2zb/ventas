@@ -13,3 +13,10 @@ npm run build  # or 'vite build' depending on your setup
 A database migration an seeding must be executed in order to generate users and roles. 
 please run: php artisan migrate --seed
 Default admin user will be manager@mycompany.com with password "password"
+
+Prepare the filesystem for public folder access so that images can be served from storage/app/public.
+Run the following command:
+php artisan storage:link
+
+⚠️ Note: On Windows, you may need to run your terminal as administrator for this command to work properly. If you encounter permission issues, manually create the symbolic link using:
+cmd /c mklink /D public\storage storage\app\public
