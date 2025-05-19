@@ -17,16 +17,25 @@
                 <label class="block text-gray-600" for="name">Name</label>
                 <input type="text" name="name" id="name" required
                     class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                @error('name')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
             </div>
             <div class="mb-4">
                 <label class="block text-gray-600" for="email">Email</label>
                 <input type="email" name="email" id="email" required
                     class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                @error('email')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
             </div>
             <div class="mb-4">
                 <label class="block text-gray-600" for="password">Password</label>
                 <input type="password" name="password" id="password" required
                     class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                @error('password')
+                    <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                @enderror
             </div>
             <div class="mb-4">
                 <label class="block text-gray-600" for="password_confirmation">Confirm password</label>
