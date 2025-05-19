@@ -17,9 +17,19 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Filament\Facades\Filament;
+use Filament\View\PanelsRenderHook;
 
 class AdminPanelProvider extends PanelProvider
 {
+    // dd('AdminPanelProvider booted');
+    public function boot(): void
+    {
+        Filament::registerRenderHook(PanelsRenderHook::AUTH_LOGIN_FORM_AFTER, function () {
+            return view('auth.register-link'); // Crea la vista con el enlace al registro
+        });
+    }
+
     public function panel(Panel $panel): Panel
     {
         return $panel
