@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\SaleOrderStatus;
 use App\Filament\Resources\SaleOrderResource\Pages;
 use App\Filament\Resources\SaleOrderResource\RelationManagers;
 use App\Filament\Resources\SaleOrderResource\RelationManagers\SaleOrderDetailsRelationManager;
@@ -29,7 +30,8 @@ class SaleOrderResource extends Resource
                     ->schema([
                         Forms\Components\TextInput::make('description')
                             ->required()
-                            ->maxLength(255),
+                            ->maxLength(255)
+                            ->readOnly(fn($record) => in_array($record->status, [SaleOrderStatus::CONFIRMED, SaleOrderStatus::CANCELLED])),
                     ]),
                 //
             ]);
@@ -67,13 +69,16 @@ class SaleOrderResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->label(fn($record) => in_array($record->status, [SaleOrderStatus::CONFIRMED, SaleOrderStatus::CANCELLED]) ? 'View' : 'Edit'),
                 Tables\Actions\Action::make('Confirm')
                     ->requiresConfirmation()
-                    ->action(fn(SaleOrder $saleOrder) => $saleOrder->confirm()),
+                    ->action(fn(SaleOrder $saleOrder) => $saleOrder->confirm())
+                    ->hidden(fn($record) => $record->status !== SaleOrderStatus::PENDING), // Solo aparece si el estado es PENDING,
                 Tables\Actions\Action::make('Cancel')
                     ->requiresConfirmation()
                     ->action(fn(SaleOrder $saleOrder) => $saleOrder->cancel())
+                    ->hidden(fn($record) => $record->status !== SaleOrderStatus::PENDING), // Solo aparece si el estado es PENDING,
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

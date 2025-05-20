@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\SaleOrderResource\RelationManagers;
 
+use App\Enums\SaleOrderStatus;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -59,16 +60,23 @@ class SaleOrderDetailsRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make(),
+                Tables\Actions\CreateAction::make()
+                    ->hidden(fn($livewire) => in_array($livewire->ownerRecord->status, [SaleOrderStatus::CONFIRMED, SaleOrderStatus::CANCELLED]))
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->hidden(fn($record) => in_array($record->saleOrder->status, [SaleOrderStatus::CONFIRMED, SaleOrderStatus::CANCELLED])), // Ocultar en órdenes no editables
+
+                Tables\Actions\DeleteAction::make()
+                    ->hidden(fn($record) => in_array($record->saleOrder->status, [SaleOrderStatus::CONFIRMED, SaleOrderStatus::CANCELLED])), // Ocultar si la orden está confirmada o cancelada
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->hidden(fn($livewire) => in_array($livewire->ownerRecord->status, [SaleOrderStatus::CONFIRMED, SaleOrderStatus::CANCELLED])), // Accede al estado de SaleOrder correctamente
                 ]),
-            ]);
+            ])
+        ;
     }
 }
