@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Models\SaleOrderDetail;
 use App\Models\Product;
 use App\Models\SaleOrder;
+use Filament\Notifications\Notification;
 
 class SaleOrderDetailsRelationManager extends RelationManager
 {
@@ -22,7 +23,7 @@ class SaleOrderDetailsRelationManager extends RelationManager
         return $form
             ->schema([
                 Forms\Components\Select::make('product_id')
-                    ->relationship('product', 'name', fn(Builder $query) => $query->where('stock', '>', 0))
+                    ->relationship('product', 'name', fn(Builder $query) => $query->where('stock', '>', 0)) // filter products with stock 
                     ->required()
                     ->label('Product')
                     ->searchable()
@@ -31,8 +32,7 @@ class SaleOrderDetailsRelationManager extends RelationManager
                 Forms\Components\TextInput::make('quantity')
                     ->required()
                     ->numeric()
-                    ->minValue(1)
-                    ->maxValue(1000),
+                    ->maxValue(fn($get) => Product::find($get('product_id'))?->stock ?? 0) // limit max quantity to available stock
             ]);
     }
 
@@ -52,7 +52,7 @@ class SaleOrderDetailsRelationManager extends RelationManager
                     ->sortable(),
                 Tables\Columns\TextColumn::make('Subtotal')
                     ->state(function (SaleOrderDetail $record): float {
-                        return $record->quantity * $record->product->price;
+                        return $record->quantity * $record->product->price; // calculate subtotal based on quantity and product price
                     })->sortable(),
             ])
             ->filters([

@@ -28,4 +28,26 @@ class SaleOrderDetail extends Model
     {
         return $this->quantity * $this->price;
     }
+
+    protected static function booted()
+    {
+        parent::boot();
+
+        static::creating(function ($saleOrderDetail) {
+            $product = $saleOrderDetail->product;
+            // as a last resort, check if the product exists before creating the sale order detail
+            if ($product->stock < $saleOrderDetail->quantity) {
+                // throw new \Exception("Not enough stock for {$product->name}. Availability: {$product->stock}"); //abrubt the creation                
+                return false; // abort creation and silence the error
+            }
+        });
+
+        static::updating(function ($saleOrderDetail) {
+            $product = $saleOrderDetail->product;
+            // as a last resort, check if the product exists before updating the sale order detail
+            if ($product->stock < $saleOrderDetail->quantity) {
+                return false; // stop the update and silence the error
+            }
+        });
+    }
 }
