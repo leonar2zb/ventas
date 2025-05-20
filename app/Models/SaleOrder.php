@@ -28,6 +28,13 @@ class SaleOrder extends Model
         return $this->hasMany(SaleOrderDetail::class);
     }
 
+    public function getTotalPriceAttribute()
+    {
+        return $this->saleOrderDetails->sum(function ($detail) {
+            return $detail->quantity * $detail->product->price;
+        });
+    }
+
     protected static function booted()
     {
         static::creating(function ($saleOrder) { // make sure to set the user_id when creating a new sale order

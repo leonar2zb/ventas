@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Validation\ValidationException;
 
 class SaleOrderDetail extends Model
 {
@@ -40,6 +41,18 @@ class SaleOrderDetail extends Model
                 // throw new \Exception("Not enough stock for {$product->name}. Availability: {$product->stock}"); //abrubt the creation                
                 return false; // abort creation and silence the error
             }
+
+            // only create the sale order detail if the product does not already exist in the sale order
+            $exists = SaleOrderDetail::where('sale_order_id', $saleOrderDetail->sale_order_id)
+                ->where('product_id', $saleOrderDetail->product_id)
+                ->exists();
+
+            if ($exists)
+                return false; // abort creation if the product already exists in the sale order detail
+            //throw ValidationException::withMessages(['product_id' => 'Este producto ya está en la orden. Modifica la cantidad en lugar de agregarlo nuevamente.']);
+
+            $saleOrderDetail->unit_price = $product->price; // set the unit price to the product's price
+
         });
 
         static::updating(function ($saleOrderDetail) {
