@@ -14,6 +14,7 @@ use App\Models\SaleOrderDetail;
 use App\Models\Product;
 use App\Models\SaleOrder;
 use Filament\Notifications\Notification;
+use Illuminate\Database\Eloquent\Model;
 
 class SaleOrderDetailsRelationManager extends RelationManager
 {
@@ -64,6 +65,9 @@ class SaleOrderDetailsRelationManager extends RelationManager
                     ->hidden(fn($livewire) => in_array($livewire->ownerRecord->status, [SaleOrderStatus::CONFIRMED, SaleOrderStatus::CANCELLED]))
             ])
             ->actions([
+                /* Tables\Actions\ViewAction::make()
+                    ->hidden(fn($record) => $record->status === SaleOrderStatus::PENDING), // Mostrar solo si la orden ya no es editable*/
+
                 Tables\Actions\EditAction::make()
                     ->hidden(fn($record) => in_array($record->saleOrder->status, [SaleOrderStatus::CONFIRMED, SaleOrderStatus::CANCELLED])), // Ocultar en órdenes no editables
 
@@ -78,5 +82,35 @@ class SaleOrderDetailsRelationManager extends RelationManager
                 ]),
             ])
         ;
+    }
+
+    public static function canCreateForRecord(Model $ownerRecord): bool
+    {
+        return $ownerRecord->status === SaleOrderStatus::PENDING;
+    }
+
+    public static function canViewAnyForRecord(Model $ownerRecord): bool
+    {
+        return $ownerRecord->status !== SaleOrderStatus::PENDING;
+    }
+
+    public static function canDeleteAnyForRecord(Model $ownerRecord): bool
+    {
+        return $ownerRecord->status === SaleOrderStatus::PENDING;
+    }
+
+    public static function canDeleteForRecord(Model $ownerRecord, Model $record): bool
+    {
+        return $ownerRecord->status === SaleOrderStatus::PENDING;
+    }
+
+    public static function canEditAnyForRecord(Model $ownerRecord): bool
+    {
+        return $ownerRecord->status === SaleOrderStatus::PENDING;
+    }
+
+    public static function canEditForRecord(Model $ownerRecord): bool
+    {
+        return $ownerRecord->status === SaleOrderStatus::PENDING;
     }
 }

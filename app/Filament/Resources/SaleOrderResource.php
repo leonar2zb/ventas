@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class SaleOrderResource extends Resource
@@ -69,8 +70,12 @@ class SaleOrderResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make()
+                    ->hidden(fn($record) => $record->status === SaleOrderStatus::PENDING), // Mostrar solo si la orden ya no es editable
+
                 Tables\Actions\EditAction::make()
-                    ->label(fn($record) => in_array($record->status, [SaleOrderStatus::CONFIRMED, SaleOrderStatus::CANCELLED]) ? 'View' : 'Edit'),
+                    //->label(fn($record) => in_array($record->status, [SaleOrderStatus::CONFIRMED, SaleOrderStatus::CANCELLED]) ? 'View1' : 'Edit'),
+                    ->hidden(fn($record) => $record->status !== SaleOrderStatus::PENDING), // Solo aparece si el estado es PENDING,
                 Tables\Actions\Action::make('Confirm')
                     ->requiresConfirmation()
                     ->action(fn(SaleOrder $saleOrder) => $saleOrder->confirm())
@@ -87,6 +92,17 @@ class SaleOrderResource extends Resource
             ]);
     }
 
+    public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
+    {
+        return in_array($ownerRecord->status, [SaleOrderStatus::CONFIRMED, SaleOrderStatus::CANCELLED]);
+    }
+
+    public static function canView(Model $record): bool
+    {
+        return in_array($record->status, [SaleOrderStatus::CONFIRMED, SaleOrderStatus::CANCELLED]);
+    }
+
+
     public static function getRelations(): array
     {
         return [
@@ -100,6 +116,7 @@ class SaleOrderResource extends Resource
             'index' => Pages\ListSaleOrders::route('/'),
             'create' => Pages\CreateSaleOrder::route('/create'),
             'edit' => Pages\EditSaleOrder::route('/{record}/edit'),
+            'view' => Pages\ViewSaleOrder::route('/{record}'),
         ];
     }
 }
