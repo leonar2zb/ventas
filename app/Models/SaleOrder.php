@@ -35,6 +35,18 @@ class SaleOrder extends Model
         });
     }
 
+    public function confirm()
+    {
+        $this->status = SaleOrderStatus::CONFIRMED;
+        $this->save();
+    }
+
+    public function cancel()
+    {
+        $this->status = SaleOrderStatus::CANCELLED;
+        $this->save();
+    }
+
     protected static function booted()
     {
         static::creating(function ($saleOrder) { // make sure to set the user_id when creating a new sale order

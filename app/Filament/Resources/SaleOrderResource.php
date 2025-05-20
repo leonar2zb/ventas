@@ -68,6 +68,12 @@ class SaleOrderResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('Confirm')
+                    ->requiresConfirmation()
+                    ->action(fn(SaleOrder $saleOrder) => $saleOrder->confirm()),
+                Tables\Actions\Action::make('Cancel')
+                    ->requiresConfirmation()
+                    ->action(fn(SaleOrder $saleOrder) => $saleOrder->cancel())
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
