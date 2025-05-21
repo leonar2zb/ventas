@@ -23,43 +23,69 @@ class UserResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return Auth::user()?->role === 'Manager';
+        // $role = Auth::user()?->role->name;
+        return true; // any restriction will be based on policy
     }
 
     public static function canAccess(): bool
     {
-        return Auth::user()?->role === 'Manager';
+        //$role = Auth::user()?->role->name;
+        return true; // any restriction will be based on policy
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        //$role = Auth::user()?->role->name;
+        return true; // any restriction will be based on policy
     }
 
 
     public static function form(Form $form): Form
     {
+        $role = auth()->user()->role->name;
+        $userId = auth()->user()->id;
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')->required(),
+                Forms\Components\TextInput::make('name')->required()
+                    ->disabled(
+                        fn($get, $record) =>
+                        $role === 'Seller' &&
+                            $userId !== $record?->id
+                    ),
                 Forms\Components\TextInput::make('email')->email()->required(),
+                // Password: solo visible al crear o si se edita uno mismo
                 Forms\Components\TextInput::make('password')
                     ->password()
-                    ->required()
+                    ->required(fn($record) => $record === null) // solo requerido al crear
                     ->confirmed()
-                    ->dehydrated(fn($state) => ! blank($state))
-                    ->visible(fn($record) => $record === null),
+                    ->dehydrated(fn($state) => !blank($state)) // solo guarda si hay valor
+                    ->visible(
+                        fn($record) =>
+                        $record === null || $userId === $record->id
+                    ),
                 Forms\Components\TextInput::make('password_confirmation')
                     ->password()
                     ->dehydrated(false)
-                    ->visible(fn($record) => $record === null),
+                    ->visible(
+                        fn($record) =>
+                        $record === null || $userId === $record->id
+                    ),
+
+                // Role: solo editable por Managers
                 Forms\Components\Select::make('role_id')
                     ->relationship('role', 'name')
                     ->required()
                     ->preload()
                     ->searchable()
                     ->reactive()
-                //
+                    ->disabled($role !== 'Manager'), // bloqueado si no es Manager                
             ]);
     }
 
     public static function table(Table $table): Table
     {
+        $role = auth()->user()->role->name;
+        $userId = auth()->user()->id;
         return $table
             ->columns([
                 TextColumn::make('name')
@@ -85,12 +111,19 @@ class UserResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()
+                    ->visible(
+                        fn(User $record) =>
+                        $role === 'Manager' ||
+                            $userId === $record->id
+                    ),
+                Tables\Actions\DeleteAction::make()
+                    ->visible(fn() => $role === 'Manager'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                ])->visible(fn() => $role === 'Manager'),
             ]);
     }
 
