@@ -9,10 +9,12 @@ use App\Filament\Resources\SaleOrderResource\RelationManagers\SaleOrderDetailsRe
 use App\Models\SaleOrder;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
@@ -88,7 +90,29 @@ class SaleOrderResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\BulkAction::make('deletePending')
+                        ->label('Remove pending orders')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->modalHeading('¿Are you sure?')
+                        ->modalDescription('This action is irreversible. Only orders in the pending status will be deleted.')
+                        ->modalSubmitActionLabel('Yes, I\'m sure')
+                        ->closeModalByClickingAway(false)
+                        ->action(function (Collection $records) {
+                            $invalid = $records->filter(fn($r) => $r->status !== SaleOrderStatus::PENDING);
+                            $valid = $records->filter(fn($r) => $r->status === SaleOrderStatus::PENDING);
+
+                            $valid->each->delete();
+
+                            if ($invalid->isNotEmpty()) {
+                                Notification::make()
+                                    ->title('Error deleting orders')
+                                    ->body('These orders were not pending, so they were not deleted: ' . $invalid->pluck('id')->join(', '))
+                                    ->danger()
+                                    ->send();
+                            }
+                        })
+                        ->hidden(fn() => ($role !== 'Manager')) // Only visible for Managers
                 ]),
             ]);
     }

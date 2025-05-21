@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Validation\ValidationException;
 
 class SaleOrder extends Model
 {
@@ -76,6 +76,14 @@ class SaleOrder extends Model
             }
             $saleOrder->user_id = Auth::id();
             $saleOrder->status = SaleOrderStatus::PENDING; // default status
+        });
+
+        // Check if the sale order is not confirmed or cancelled
+        static::deleting(function ($saleOrder) {
+            if ($saleOrder->status !== SaleOrderStatus::PENDING || Auth::user()->role->name !== 'Manager') {
+                //throw new \Exception('Cannot delete a confirmed or cancelled sale order');
+                return false; // abort deletion
+            }
         });
     }
 }
