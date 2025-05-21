@@ -40,6 +40,8 @@ class SaleOrderResource extends Resource
 
     public static function table(Table $table): Table
     {
+        $role = auth()->user()->role->name;
+        $userId = auth()->user()->id;
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('id')
@@ -71,19 +73,18 @@ class SaleOrderResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
-                    ->hidden(fn($record) => $record->status === SaleOrderStatus::PENDING), // Mostrar solo si la orden ya no es editable
+                    ->hidden(fn($record) => (($userId === $record->user_id && $record->status === SaleOrderStatus::PENDING))), // Mostrar solo si la orden no es editable(otro user o ya confir/cancelada)
 
                 Tables\Actions\EditAction::make()
-                    //->label(fn($record) => in_array($record->status, [SaleOrderStatus::CONFIRMED, SaleOrderStatus::CANCELLED]) ? 'View1' : 'Edit'),
-                    ->hidden(fn($record) => $record->status !== SaleOrderStatus::PENDING), // Solo aparece si el estado es PENDING,
+                    ->hidden(fn($record) => ($record->status !== SaleOrderStatus::PENDING || ($record->user_id !== $userId))), // Solo aparece si el estado es PENDING y del usuario logueado,
                 Tables\Actions\Action::make('Confirm')
                     ->requiresConfirmation()
                     ->action(fn(SaleOrder $saleOrder) => $saleOrder->confirm())
-                    ->hidden(fn($record) => $record->status !== SaleOrderStatus::PENDING), // Solo aparece si el estado es PENDING,
+                    ->hidden(fn($record) => ($record->status !== SaleOrderStatus::PENDING || ($record->user_id !== $userId))), // Solo aparece si el estado es PENDING y del usuario logueado,
                 Tables\Actions\Action::make('Cancel')
                     ->requiresConfirmation()
                     ->action(fn(SaleOrder $saleOrder) => $saleOrder->cancel())
-                    ->hidden(fn($record) => $record->status !== SaleOrderStatus::PENDING), // Solo aparece si el estado es PENDING,
+                    ->hidden(fn($record) => ($record->status !== SaleOrderStatus::PENDING || ($record->user_id !== $userId))), // Solo aparece si el estado es PENDING y del usuario logueado,
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -94,12 +95,22 @@ class SaleOrderResource extends Resource
 
     public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
     {
-        return in_array($ownerRecord->status, [SaleOrderStatus::CONFIRMED, SaleOrderStatus::CANCELLED]);
+        $role = auth()->user()->role->name;
+        $userId = auth()->user()->id;
+        return (in_array($ownerRecord->status, [SaleOrderStatus::CONFIRMED, SaleOrderStatus::CANCELLED]) || $userId !== $ownerRecord->user_id);
     }
 
     public static function canView(Model $record): bool
     {
-        return in_array($record->status, [SaleOrderStatus::CONFIRMED, SaleOrderStatus::CANCELLED]);
+        $role = auth()->user()->role->name;
+        $userId = auth()->user()->id;
+        return (in_array($record->status, [SaleOrderStatus::CONFIRMED, SaleOrderStatus::CANCELLED]) || $userId !== $record->user_id);
+    }
+
+    // Only editable if the status is PENDING and the user is the one who created it
+    public static function canEdit(Model $record): bool
+    {
+        return ($record->status === SaleOrderStatus::PENDING && $record->user_id === auth()->user()->id);
     }
 
 
