@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+
 
 class SaleOrder extends Model
 {
@@ -37,8 +39,30 @@ class SaleOrder extends Model
 
     public function confirm()
     {
-        $this->status = SaleOrderStatus::CONFIRMED;
-        $this->save();
+        /*$this->status = SaleOrderStatus::CONFIRMED;
+        $this->save();*/
+        $saleOrderId = $this->id;
+
+        DB::transaction(function () use ($saleOrderId) {
+            $saleOrder = SaleOrder::findOrFail($saleOrderId);
+
+            // Calcular el total de la venta
+            $totalAmount = $this->getTotalPriceAttribute();
+            $saleOrder->update([
+                'total_price' => $totalAmount,
+                'status' => SaleOrderStatus::CONFIRMED,
+                'updated_at' => now()
+            ]);
+
+            // Descontar stock de cada producto
+            foreach ($saleOrder->details as $detail) {
+                if ($detail->product->stock < $detail->quantity) {
+                    throw new \Exception("No hay suficiente stock para el producto {$detail->product->name}");
+                }
+                $stock = $detail->product->stock - $detail->quantity;
+                $detail->product->update(['stock' => $stock]);
+            }
+        });
     }
 
     public function cancel()

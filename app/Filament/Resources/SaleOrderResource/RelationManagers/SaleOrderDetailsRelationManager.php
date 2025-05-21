@@ -14,6 +14,7 @@ use App\Models\SaleOrderDetail;
 use App\Models\Product;
 use App\Models\SaleOrder;
 use Filament\Notifications\Notification;
+use Filament\Tables\Columns\ImageColumn;
 use Illuminate\Database\Eloquent\Model;
 
 class SaleOrderDetailsRelationManager extends RelationManager
@@ -43,7 +44,13 @@ class SaleOrderDetailsRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('product_id')
             ->columns([
-                Tables\Columns\TextColumn::make('product_id'),
+                Tables\Columns\TextColumn::make('product_id')
+                    ->toggleable(isToggledHiddenByDefault: true),
+                ImageColumn::make('product.image_url') // Aquí se usa el campo que guarda la URL
+                    ->disk('public') // Asegura que la imagen se busque en el almacenamiento público
+                    ->label('Picture')
+                    ->height(50) // Opcional: ajusta el tamaño
+                    ->width(50), // Opcional: ajusta el tamaño, 
                 Tables\Columns\TextColumn::make('product.name'),
                 Tables\Columns\TextColumn::make('product.price')
                     ->money('usd', true)
@@ -63,6 +70,7 @@ class SaleOrderDetailsRelationManager extends RelationManager
             ->headerActions([
                 Tables\Actions\CreateAction::make()
                     ->hidden(fn($livewire) => in_array($livewire->ownerRecord->status, [SaleOrderStatus::CONFIRMED, SaleOrderStatus::CANCELLED]))
+                    ->label('Add Product')
             ])
             ->actions([
                 /* Tables\Actions\ViewAction::make()

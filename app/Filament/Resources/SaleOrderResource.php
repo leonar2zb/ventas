@@ -20,7 +20,7 @@ class SaleOrderResource extends Resource
 {
     protected static ?string $model = SaleOrder::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
 
     public static function form(Form $form): Form
     {
@@ -32,7 +32,7 @@ class SaleOrderResource extends Resource
                         Forms\Components\TextInput::make('description')
                             ->required()
                             ->maxLength(255)
-                            ->readOnly(fn($record) => in_array($record->status, [SaleOrderStatus::CONFIRMED, SaleOrderStatus::CANCELLED])),
+                            ->readOnly(fn($record) => in_array($record?->status, [SaleOrderStatus::CONFIRMED, SaleOrderStatus::CANCELLED])),
                     ]),
                 //
             ]);

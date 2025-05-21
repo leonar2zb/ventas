@@ -39,8 +39,6 @@ class SaleOrderPolicy
      */
     public function update(User $user, SaleOrder $saleOrder): bool
     {
-        /* return true; /* Provicionalmente, permito la actualización de cualquier orden de venta para 
-        poder acceder desde Edit a ver los detalles SaleOrderDetail y en esta última sí tengo en cuenta el estado de la orden de venta.*/
         $can = $saleOrder->status === SaleOrderStatus::PENDING
             && $user->role?->name === 'Seller';
         return $can;
