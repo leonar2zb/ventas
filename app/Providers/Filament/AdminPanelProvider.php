@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Resources\DashboardResource\Widgets\SalesByUserChart;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -19,6 +20,7 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Facades\Filament;
 use Filament\View\PanelsRenderHook;
+use Filament\View\LegacyComponents\Widget;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -47,8 +49,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+                SalesByUserChart::class,
+                //Widgets\AccountWidget::class, logout
+                //Widgets\FilamentInfoWidget::class, link doc filament
             ])
             ->middleware([
                 EncryptCookies::class,
