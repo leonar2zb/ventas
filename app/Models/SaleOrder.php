@@ -39,23 +39,20 @@ class SaleOrder extends Model
 
     public function confirm()
     {
-        /*$this->status = SaleOrderStatus::CONFIRMED;
-        $this->save();*/
         $saleOrderId = $this->id;
 
         DB::transaction(function () use ($saleOrderId) {
             $saleOrder = SaleOrder::findOrFail($saleOrderId);
 
             // Calcular el total de la venta
-            $totalAmount = $this->getTotalPriceAttribute();
-            $saleOrder->update([
-                'total_price' => $totalAmount,
-                'status' => SaleOrderStatus::CONFIRMED,
-                'updated_at' => now()
-            ]);
+            $totalAmount = $this->total_price;
+
+            $saleOrder->status = SaleOrderStatus::CONFIRMED;
+            $saleOrder->total_price = $totalAmount;
+            $saleOrder->save();
 
             // Descontar stock de cada producto
-            foreach ($saleOrder->details as $detail) {
+            foreach ($saleOrder->saleOrderDetails as $detail) {
                 if ($detail->product->stock < $detail->quantity) {
                     throw new \Exception("No hay suficiente stock para el producto {$detail->product->name}");
                 }
