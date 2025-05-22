@@ -26,7 +26,7 @@ RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cac
 EXPOSE 80
 
 # Instala dependencias y corre migraciones y seeders en build
-RUN composer install --no-dev --optimize-autoloader && \
-    php artisan key:generate && \
-    php artisan migrate --force && \
-    php artisan db:seed --force
+RUN composer install --no-dev --optimize-autoloader
+RUN php artisan key:generate
+RUN php artisan migrate --force
+RUN php artisan db:seed --force
