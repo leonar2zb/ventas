@@ -28,6 +28,9 @@ RUN chmod -R 775 storage bootstrap/cache
 # Expone el puerto 80 por defecto (Apache)
 EXPOSE 80
 
+# Si el archivo .env no existe, créalo sin sobrescribir variables de Render
+RUN [ -f .env ] || touch .env
+
 # Instalación de dependencias y configuración en pasos separados para facilitar depuración
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 RUN php artisan key:generate
