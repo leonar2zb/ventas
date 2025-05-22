@@ -31,5 +31,5 @@ EXPOSE 80
 # Instalación de dependencias y configuración en pasos separados para facilitar depuración
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 RUN php artisan key:generate
-RUN php artisan migrate --force
-RUN php artisan db:seed --force
+#RUN php artisan migrate --force
+#RUN php artisan db:seed --force
