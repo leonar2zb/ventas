@@ -23,7 +23,7 @@ WORKDIR /var/www/html
 RUN chmod -R 775 storage bootstrap/cache
 
 # Asegura que exista el archivo .env antes de generar la clave de aplicación
-RUN cp .env.example .env
+# RUN cp .env.example .env
 
 # Expone el puerto 80 por defecto (Apache)
 EXPOSE 80
@@ -31,5 +31,5 @@ EXPOSE 80
 # Instalación de dependencias y configuración en pasos separados para facilitar depuración
 RUN composer install --no-dev --optimize-autoloader --ignore-platform-reqs
 RUN php artisan key:generate
-#RUN php artisan migrate --force
-#RUN php artisan db:seed --force
+# RUN php artisan migrate --force
+# RUN php artisan db:seed --force
